@@ -90,29 +90,47 @@ public_users.get('/author/:author',async function (req, res) {
         } catch (error) {
             res.status(404).json({message: "We do not have books with that author"});
         }
-    }
 
+    } else {
+        res.status(400).json({message: "Author parameter is required"});
+    }    
 });
 
 
-
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
     //Write your code here
+
     const title = req.params.title;
-    let booksbytitle = [];
+    
+    if (title){
+        try {
+                const bookresult = await new Promise((resolve, reject)=>{
+                    const bookresult = []
+                    for (let id in books){
+                        if (books[id].title.toLowerCase() === title.toLowerCase()) {
+                            bookresult.push(books[id]);
+                        };
+                    }
 
-    for (let id in books) {
-        if(books[id].title.toLowerCase() === title.toLowerCase()){
-            booksbytitle.push(books[id]);
+                    if (bookresult.length > 0){
+                        resolve(JSON.stringify(bookresult, null, 2));
+                    }
+                    else {
+                        reject(new Error("No books found"));
+                    }   
+                })     
+
+                res.status(200).json(bookresult);
+                
+        } catch (error) {
+             res.status(404).json({message: "We do not have books with that title"});
         }
-    }
 
-    if (booksbytitle.length > 0) {    
-        res.status(200).json(booksbytitle)
     } else {
-        res.status(404).json({message: "Book by that title were not found"});
+        res.status(400).json({message: "Title parameter is required"});
     }
+    
 });
 
 //  Get book review
